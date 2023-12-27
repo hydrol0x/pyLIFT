@@ -18,26 +18,13 @@ class simple_free:
         self.t_0 = t_0
         self.dU = dU
         self.dt = dt
-        self.voltages = []
+        self.end_time = None
+
+    def add_spike(self, q: float, t: float):
+        # Update the accumulated effect of spikes
+        self.dU = self.dU * exp(-(t - self.t_0) / self.tau) + q
+        # Reset t_0 to the current time
+        self.t_0 = t
 
     def u(self, t: float) -> float:
         return self.dU * exp(-(t - self.t_0) / self.tau) + self.u_rest
-
-    def simulate(self, end_time: float):
-        # simulate from t_0 to end_time seconds
-        self.end_time = end_time
-        for t in np.arange(self.t_0, end_time, self.dt):
-            self.voltages.append(self.u(t))
-
-    def plot(self):
-        if not self.end_time or not self.voltages:
-            raise ValueError("Must run `simulate()` first.")
-        x = np.arange(self.t_0, self.end_time, self.dt)
-        plt.plot(x, self.voltages)
-        plt.show()
-
-
-if __name__ == "__main__":
-    model = simple_free(10, 5, 1, 0.01)
-    model.simulate(100)
-    model.plot()
