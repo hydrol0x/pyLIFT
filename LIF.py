@@ -2,7 +2,6 @@
 simple LIF neuron implementation
 """
 
-from math import exp
 from free_model import simple_free
 import numpy as np
 import matplotlib.pyplot as plt
@@ -15,10 +14,8 @@ class Neuron:
         tau: float,
         R: float,
         C: float,
-        # dt: float,
         t_refrac: float,
         spike_threshold: float,
-        # t_0: float = 0,
     ):
         # Neuron parameters
         self.R = R
@@ -34,12 +31,6 @@ class Neuron:
         self.last_spike_time: float | None = None
         self.refractory = False
 
-        # self.t_0 = t_0
-        # self.dt = dt
-        # self.end_time: None | float = None
-
-        # self.voltages: list[float] = []
-
     def input(self, q: float, t: float):
         # Add a spike at time t with charge q
         self.free.add_input(q, t)
@@ -54,7 +45,6 @@ class Neuron:
         if self.voltage >= self.spike_threshold and not self.refractory:
             self.last_spike_time = t
             self.refractory = True
-            print("spike")
         if (
             self.last_spike_time
             and self.is_in_range(
@@ -62,13 +52,12 @@ class Neuron:
             )
             and self.refractory
         ):
-            print("refractory")
             return self.u_rest
         self.voltage = self.free.u(t)
         return self.voltage
 
 
-class Simulator:
+class Environment:
     def __init__(
         self,
         neuron: Neuron,
@@ -82,7 +71,7 @@ class Simulator:
         self.end_time = end_time
         self.inputs = inputs
         self.dt = dt
-        self.voltages = []
+        self.voltages: list[float] = []
 
     def simulate(self):
         input_idx = 0  # index to track the current spike
@@ -106,9 +95,6 @@ if __name__ == "__main__":
     neuron = Neuron(0, 1, 1, 1, 1, 15)
     # inputs: list[tuple[float, float]] = [(0, 5), (1, 6), (2, 3), (5, 2), (5.5, 3)]
     inputs = [(1, 3), (2, 3), (3, 3), (4, 9)]
-    simulator = Simulator(neuron, inputs, 0, 10, 0.01)
-    simulator.simulate()
-    simulator.plot()
-
-
-# TODO: refactor so neuron has no memory and just outputs the voltage its at now
+    env = Environment(neuron, inputs, 0, 10, 0.01)
+    env.simulate()
+    env.plot()
